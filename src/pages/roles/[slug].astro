@@ -29,14 +29,14 @@ const { Content } = await render(entry);
       {job.title}
     </h1>
 
-    <div class="flex flex-wrap gap-2 mb-4">
-      <Tag color="blue">{job.department}</Tag>
-      <Tag color="slate">{job.type}</Tag>
-      {job.remote && <Tag color="slate">Remote</Tag>}
+    <div class="flex flex-wrap gap-2 mb-4" data-testid="role-detail-metadata">
+      <Tag color="blue" data-testid="role-detail-department">{job.department}</Tag>
+      <Tag color="slate" data-testid="role-detail-type">{job.type}</Tag>
+      {job.remote && <Tag color="slate" data-testid="role-detail-remote">Remote</Tag>}
     </div>
 
-    <p class="text-slate-400 mb-1">{job.location}</p>
-    <p class="text-xs text-slate-400 mb-8">Posted {formatPostedDate(job.postedDate)}</p>
+    <p class="text-slate-400 mb-1" data-testid="role-detail-location">{job.location}</p>
+    <p class="text-xs text-slate-400 mb-8" data-testid="role-detail-posted-date">Posted {formatPostedDate(job.postedDate)}</p>
 
     <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
       <Content />
