@@ -69,11 +69,65 @@ test.describe('Open roles listing', () => {
     ).toBeVisible();
 
     await page.getByTestId('filter-reset').click();
+    await expect(page.getByTestId('role-search')).toHaveValue('');
     await expect(departmentFilter).toHaveValue('');
     await expect(locationFilter).toHaveValue('');
     await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(
       expectedRoleCount,
     );
+  });
+
+  test('filters roles by title search case-insensitively and restores on clear', async ({ page }) => {
+    await page.goto('/');
+    const searchInput = page.getByTestId('role-search');
+    await expect(searchInput).toBeVisible();
+
+    await searchInput.fill('FRONTEND');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(1);
+    await expect(
+      page.getByTestId('role-card').filter({
+        has: page.getByRole('heading', { name: 'Senior Frontend Engineer', exact: true }),
+      }),
+    ).toBeVisible();
+
+    await searchInput.fill('');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(
+      expectedRoleCount,
+    );
+  });
+
+  test('shows an empty state when search matches no roles and resets', async ({ page }) => {
+    await page.goto('/');
+    const searchInput = page.getByTestId('role-search');
+    await searchInput.fill('Nonexistent Job Role 12345');
+
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(0);
+    await expect(page.getByTestId('filtered-empty-state')).toBeVisible();
+
+    await page.getByTestId('filter-reset').click();
+    await expect(searchInput).toHaveValue('');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(
+      expectedRoleCount,
+    );
+    await expect(page.getByTestId('filtered-empty-state')).toBeHidden();
+  });
+
+  test('combines search with department and location filters', async ({ page }) => {
+    await page.goto('/');
+    const searchInput = page.getByTestId('role-search');
+    const departmentFilter = page.getByTestId('department-filter');
+    const locationFilter = page.getByTestId('location-filter');
+
+    await searchInput.fill('Analyst');
+    await departmentFilter.selectOption({ label: 'Finance' });
+    await locationFilter.selectOption({ label: 'Woodinville, WA, USA' });
+
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(1);
+    await expect(
+      page.getByTestId('role-card').filter({
+        has: page.getByRole('heading', { name: 'Financial Analyst', exact: true }),
+      }),
+    ).toBeVisible();
   });
 
   test('shows an empty state when no roles match both filters', async ({ page }) => {

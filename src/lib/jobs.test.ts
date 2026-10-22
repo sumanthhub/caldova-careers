@@ -3,6 +3,7 @@ import {
     filterJobs,
     filterJobsByDepartment,
     filterJobsByLocation,
+    searchJobsByTitle,
     sortByNewest,
     formatPostedDate,
 } from './jobs';
@@ -67,11 +68,61 @@ describe('filterJobsByLocation', () => {
   });
 });
 
+describe('searchJobsByTitle', () => {
+  const jobs = [
+    { ...makeJob('frontend', '2027-01-01'), title: 'Senior Frontend Engineer' },
+    { ...makeJob('backend', '2027-01-02'), title: 'Data Platform Engineer' },
+    { ...makeJob('analyst', '2027-01-03'), title: 'Financial Analyst' },
+  ];
+
+  it('matches title case-insensitively', () => {
+    expect(searchJobsByTitle(jobs, 'FRONTEND').map((job) => job.slug)).toEqual(['frontend']);
+    expect(searchJobsByTitle(jobs, 'frontend').map((job) => job.slug)).toEqual(['frontend']);
+  });
+
+  it('matches partial title strings', () => {
+    expect(searchJobsByTitle(jobs, 'Engineer').map((job) => job.slug)).toEqual([
+      'frontend',
+      'backend',
+    ]);
+  });
+
+  it('trims whitespace around the query', () => {
+    expect(searchJobsByTitle(jobs, '  analyst  ').map((job) => job.slug)).toEqual(['analyst']);
+  });
+
+  it('returns all jobs when query is empty or whitespace', () => {
+    expect(searchJobsByTitle(jobs, '').map((job) => job.slug)).toEqual([
+      'frontend',
+      'backend',
+      'analyst',
+    ]);
+    expect(searchJobsByTitle(jobs, '   ').map((job) => job.slug)).toEqual([
+      'frontend',
+      'backend',
+      'analyst',
+    ]);
+  });
+
+  it('returns no jobs when no title matches', () => {
+    expect(searchJobsByTitle(jobs, 'Astronaut')).toEqual([]);
+  });
+});
+
 describe('filterJobs', () => {
   const jobs = [
-    makeJob('finance-woodinville', '2027-01-01', 'Finance', 'Woodinville, WA, USA'),
-    makeJob('finance-helsinki', '2027-01-02', 'Finance', 'Helsinki, Finland'),
-    makeJob('technology-woodinville', '2027-01-03', 'Technology', 'Woodinville, WA, USA'),
+    {
+      ...makeJob('finance-woodinville', '2027-01-01', 'Finance', 'Woodinville, WA, USA'),
+      title: 'Senior Financial Analyst',
+    },
+    {
+      ...makeJob('finance-helsinki', '2027-01-02', 'Finance', 'Helsinki, Finland'),
+      title: 'Junior Financial Analyst',
+    },
+    {
+      ...makeJob('technology-woodinville', '2027-01-03', 'Technology', 'Woodinville, WA, USA'),
+      title: 'Senior Frontend Engineer',
+    },
   ];
 
   it('combines department and location filters with AND semantics', () => {
@@ -80,8 +131,17 @@ describe('filterJobs', () => {
     ).toEqual(['finance-woodinville']);
   });
 
-  it('returns all jobs when both filters are reset', () => {
-    expect(filterJobs(jobs, '', '').map((job) => job.slug)).toEqual([
+  it('combines department, location, and search query with AND semantics', () => {
+    expect(
+      filterJobs(jobs, 'Finance', 'Woodinville, WA, USA', 'Senior').map((job) => job.slug),
+    ).toEqual(['finance-woodinville']);
+    expect(
+      filterJobs(jobs, 'Finance', 'Woodinville, WA, USA', 'Junior'),
+    ).toEqual([]);
+  });
+
+  it('returns all jobs when both filters and search are reset', () => {
+    expect(filterJobs(jobs, '', '', '').map((job) => job.slug)).toEqual([
       'finance-woodinville',
       'finance-helsinki',
       'technology-woodinville',

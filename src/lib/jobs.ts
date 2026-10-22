@@ -17,9 +17,23 @@ export function filterJobsByLocation(jobs: Job[], location: string): Job[] {
   return jobs.filter((job) => !location || job.location === location);
 }
 
-/** Apply the selected department and location filters together using AND semantics. */
-export function filterJobs(jobs: Job[], department: string, location: string): Job[] {
-  return filterJobsByLocation(filterJobsByDepartment(jobs, department), location);
+/** Return jobs whose title matches query case-insensitively, or all jobs when query is empty. */
+export function searchJobsByTitle(jobs: Job[], query: string): Job[] {
+  const normalized = query.trim().toLowerCase();
+  return jobs.filter((job) => !normalized || job.title.toLowerCase().includes(normalized));
+}
+
+/** Apply department, location, and optional title search filters together using AND semantics. */
+export function filterJobs(
+  jobs: Job[],
+  department: string,
+  location: string,
+  searchQuery: string = '',
+): Job[] {
+  return searchJobsByTitle(
+    filterJobsByLocation(filterJobsByDepartment(jobs, department), location),
+    searchQuery,
+  );
 }
 
 /** Return jobs sorted by posted date, newest first (does not mutate input). */

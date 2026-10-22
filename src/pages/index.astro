@@ -32,7 +32,19 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
       <EmptyState text="There are no open roles right now. Check back soon." />
     ) : (
       <>
-        <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4" data-testid="role-filters">
+        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="role-filters">
+          <div>
+            <label for="role-search" class="block mb-2 text-sm font-medium text-slate-200">
+              Search roles
+            </label>
+            <input
+              type="search"
+              id="role-search"
+              placeholder="Search by title..."
+              class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              data-testid="role-search"
+            />
+          </div>
           <div>
             <label for="department-filter" class="block mb-2 text-sm font-medium text-slate-200">
               Department
@@ -90,6 +102,9 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
   import type { Job } from '../types/job';
 
   const grid = document.querySelector<HTMLElement>('[data-testid="roles-grid"]');
+  const searchInput = document.querySelector<HTMLInputElement>(
+    '[data-testid="role-search"]',
+  );
   const departmentFilter = document.querySelector<HTMLSelectElement>(
     '[data-testid="department-filter"]',
   );
@@ -105,8 +120,9 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
 
     /** Recompute visible role cards and announce when no roles match the filters. */
     const updateVisibleRoles = (): void => {
+      const query = searchInput?.value ?? '';
       const matchingJobIds = new Set(
-        filterJobs(jobs, departmentFilter.value, locationFilter.value).map(
+        filterJobs(jobs, departmentFilter.value, locationFilter.value, query).map(
           (job) => job.slug,
         ),
       );
@@ -118,9 +134,14 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
       emptyState.hidden = matchingJobIds.size > 0;
     };
 
+    searchInput?.addEventListener('input', updateVisibleRoles);
+    searchInput?.addEventListener('search', updateVisibleRoles);
     departmentFilter.addEventListener('change', updateVisibleRoles);
     locationFilter.addEventListener('change', updateVisibleRoles);
     resetButton.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+      }
       departmentFilter.value = '';
       locationFilter.value = '';
       updateVisibleRoles();
