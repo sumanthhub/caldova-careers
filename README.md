@@ -76,7 +76,7 @@ The `quality-checks` skill runs lint, type checking, and unit tests only, even f
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up your environment, run the checks, and submit a pull request. This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up your environment, run the checks, and submit a pull request. Review our [Coding Standards](CODING_STANDARDS.md) before submitting changes. This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Support
 

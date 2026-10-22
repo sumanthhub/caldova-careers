@@ -20,11 +20,13 @@ export const applicationSchema = z.object({
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 
 /**
- * Validate and insert an application. Returns the new row id.
- * Throws a ZodError when the input is invalid.
+ * Validate and insert a candidate application record into the database.
+ * Normalizes input strings by trimming whitespace and converting blank optional fields to null.
  *
- * @param db - The Drizzle database client.
- * @param input - Raw application payload to validate and persist.
+ * @param db - The Drizzle database client to execute the insert query.
+ * @param input - Raw application payload to validate against applicationSchema and persist.
+ * @returns A Promise resolving to the newly generated application ID number.
+ * @throws {z.ZodError} If input fails schema validation.
  */
 export async function createApplication(db: Database, input: unknown): Promise<number> {
     const data = applicationSchema.parse(input);

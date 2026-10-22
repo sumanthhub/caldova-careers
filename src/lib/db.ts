@@ -27,14 +27,25 @@ function ensureLocalDir(url: string): void {
     }
 }
 
-/** Create a Drizzle client for the given libSQL connection URL. */
+/**
+ * Create a Drizzle ORM client configured for the specified libSQL database URL.
+ * Automatically ensures the parent directory exists if using a local file path.
+ *
+ * @param url - Connection URL for libSQL (defaults to DATABASE_URL or a local SQLite file).
+ * @returns Configured Drizzle database client instance with application schema.
+ */
 export function createDatabase(url: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL): Database {
     ensureLocalDir(url);
     const client = createClient({ url });
     return drizzle(client, { schema });
 }
 
-/** Shared singleton database client used by the apply endpoint. */
+/**
+ * Retrieve the shared singleton Drizzle database instance used by on-demand endpoints.
+ * Lazily initializes the connection on first invocation.
+ *
+ * @returns Cached singleton Drizzle database client.
+ */
 export function getDatabase(): Database {
     if (!cachedDb) {
         cachedDb = createDatabase();
