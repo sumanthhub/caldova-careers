@@ -71,9 +71,43 @@ test.describe('Open roles listing', () => {
     await page.getByTestId('filter-reset').click();
     await expect(departmentFilter).toHaveValue('');
     await expect(locationFilter).toHaveValue('');
-    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(
-      expectedRoleCount,
-    );
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(6);
+  });
+
+  test('paginates roles list and moves between pages', async ({ page }) => {
+    await page.goto('/');
+    const pagination = page.getByTestId('pagination');
+    const prevButton = page.getByTestId('pagination-prev');
+    const nextButton = page.getByTestId('pagination-next');
+    const pageInfo = page.getByTestId('pagination-info');
+
+    await expect(pagination).toBeVisible();
+    await expect(prevButton).toBeDisabled();
+    await expect(nextButton).toBeEnabled();
+    await expect(pageInfo).toHaveText('Page 1 of 3');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(6);
+
+    await nextButton.click();
+    await expect(prevButton).toBeEnabled();
+    await expect(nextButton).toBeEnabled();
+    await expect(pageInfo).toHaveText('Page 2 of 3');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(6);
+
+    await nextButton.click();
+    await expect(prevButton).toBeEnabled();
+    await expect(nextButton).toBeDisabled();
+    await expect(pageInfo).toHaveText('Page 3 of 3');
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(2);
+
+    await prevButton.click();
+    await expect(pageInfo).toHaveText('Page 2 of 3');
+  });
+
+  test('hides pagination controls when filtered results fit on single page', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('department-filter').selectOption({ label: 'Finance' });
+    await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(2);
+    await expect(page.getByTestId('pagination')).toBeHidden();
   });
 
   test('shows an empty state when no roles match both filters', async ({ page }) => {
@@ -108,6 +142,10 @@ test.describe('Open roles listing', () => {
       const card = page.getByTestId('role-card').filter({
         has: page.getByRole('heading', { name: title, exact: true }),
       });
+
+      while (!(await card.isVisible()) && (await page.getByTestId('pagination-next').isEnabled())) {
+        await page.getByTestId('pagination-next').click();
+      }
 
       await expect(card).toBeVisible();
       await expect(card.getByText(location, { exact: true })).toHaveCount(0);

@@ -5,9 +5,10 @@ import { formatPostedDate } from '../lib/jobs';
 
 interface Props {
     job: Job;
+    hidden?: boolean;
 }
 
-const { job } = Astro.props;
+const { job, hidden = false } = Astro.props;
 ---
 
 <a
@@ -16,6 +17,7 @@ const { job } = Astro.props;
     data-testid="role-card"
     data-job-id={job.slug}
     data-department={job.department}
+    hidden={hidden}
 >
     <div class="p-6">
         <h3

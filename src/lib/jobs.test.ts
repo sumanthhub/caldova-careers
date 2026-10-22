@@ -3,6 +3,7 @@ import {
     filterJobs,
     filterJobsByDepartment,
     filterJobsByLocation,
+    paginateJobs,
     sortByNewest,
     formatPostedDate,
 } from './jobs';
@@ -118,5 +119,60 @@ describe('formatPostedDate', () => {
 
   it('returns the raw value when the date is unparseable', () => {
     expect(formatPostedDate('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('paginateJobs', () => {
+  const jobs = [
+    makeJob('1', '2027-01-01'),
+    makeJob('2', '2027-01-02'),
+    makeJob('3', '2027-01-03'),
+    makeJob('4', '2027-01-04'),
+    makeJob('5', '2027-01-05'),
+  ];
+
+  it('paginates items according to page and pageSize', () => {
+    const page1 = paginateJobs(jobs, 1, 2);
+    expect(page1.items.map((j) => j.slug)).toEqual(['1', '2']);
+    expect(page1.currentPage).toBe(1);
+    expect(page1.totalPages).toBe(3);
+    expect(page1.hasNextPage).toBe(true);
+    expect(page1.hasPrevPage).toBe(false);
+
+    const page2 = paginateJobs(jobs, 2, 2);
+    expect(page2.items.map((j) => j.slug)).toEqual(['3', '4']);
+    expect(page2.hasNextPage).toBe(true);
+    expect(page2.hasPrevPage).toBe(true);
+
+    const page3 = paginateJobs(jobs, 3, 2);
+    expect(page3.items.map((j) => j.slug)).toEqual(['5']);
+    expect(page3.hasNextPage).toBe(false);
+    expect(page3.hasPrevPage).toBe(true);
+  });
+
+  it('handles single-page lists', () => {
+    const res = paginateJobs(jobs, 1, 10);
+    expect(res.items.length).toBe(5);
+    expect(res.totalPages).toBe(1);
+    expect(res.hasNextPage).toBe(false);
+    expect(res.hasPrevPage).toBe(false);
+  });
+
+  it('handles empty job lists gracefully', () => {
+    const res = paginateJobs([], 1, 5);
+    expect(res.items).toEqual([]);
+    expect(res.currentPage).toBe(1);
+    expect(res.totalPages).toBe(1);
+    expect(res.totalItems).toBe(0);
+    expect(res.hasNextPage).toBe(false);
+    expect(res.hasPrevPage).toBe(false);
+  });
+
+  it('clamps out-of-range page numbers', () => {
+    const resLow = paginateJobs(jobs, 0, 2);
+    expect(resLow.currentPage).toBe(1);
+
+    const resHigh = paginateJobs(jobs, 999, 2);
+    expect(resHigh.currentPage).toBe(3);
   });
 });

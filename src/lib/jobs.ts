@@ -45,3 +45,39 @@ export function formatPostedDate(iso: string): string {
     timeZone: 'UTC',
   });
 }
+
+export interface PaginationResult {
+  items: Job[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export const DEFAULT_PAGE_SIZE = 6;
+
+/** Paginate an array of jobs with a 1-indexed page number and page size. */
+export function paginateJobs(
+  jobs: Job[],
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+): PaginationResult {
+  const safePageSize = Math.max(1, pageSize);
+  const totalItems = jobs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / safePageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const startIndex = (currentPage - 1) * safePageSize;
+  const items = jobs.slice(startIndex, startIndex + safePageSize);
+
+  return {
+    items,
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize: safePageSize,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1,
+  };
+}

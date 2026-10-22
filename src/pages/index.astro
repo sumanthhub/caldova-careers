@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import RoleCard from '../components/RoleCard.astro';
 import EmptyState from '../components/EmptyState.astro';
-import { sortByNewest } from '../lib/jobs';
+import { sortByNewest, DEFAULT_PAGE_SIZE } from '../lib/jobs';
 import type { Job } from '../types/job';
 
 export const prerender = true;
@@ -74,9 +74,37 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           data-testid="roles-grid"
           data-jobs={JSON.stringify(jobs)}
+          data-page-size={DEFAULT_PAGE_SIZE}
         >
-          {jobs.map((job) => <RoleCard job={job} />)}
+          {jobs.map((job, index) => <RoleCard job={job} hidden={index >= DEFAULT_PAGE_SIZE} />)}
         </div>
+
+        <div
+          class="mt-8 flex items-center justify-between"
+          data-testid="pagination"
+          hidden={jobs.length <= DEFAULT_PAGE_SIZE}
+        >
+          <button
+            type="button"
+            class="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 hover:border-blue-500 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-600 disabled:hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+            data-testid="pagination-prev"
+            disabled
+          >
+            ← Previous
+          </button>
+          <span class="text-sm text-slate-400" data-testid="pagination-info">
+            Page 1 of {Math.max(1, Math.ceil(jobs.length / DEFAULT_PAGE_SIZE))}
+          </span>
+          <button
+            type="button"
+            class="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 hover:border-blue-500 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-600 disabled:hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+            data-testid="pagination-next"
+            disabled={jobs.length <= DEFAULT_PAGE_SIZE}
+          >
+            Next →
+          </button>
+        </div>
+
         <div class="mt-6" data-testid="filtered-empty-state" hidden>
           <EmptyState text="No roles match these filters. Try changing or resetting your filters." />
         </div>
@@ -86,7 +114,7 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
 </Layout>
 
 <script>
-  import { filterJobs } from '../lib/jobs';
+  import { filterJobs, paginateJobs, DEFAULT_PAGE_SIZE } from '../lib/jobs';
   import type { Job } from '../types/job';
 
   const grid = document.querySelector<HTMLElement>('[data-testid="roles-grid"]');
@@ -98,32 +126,75 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
   );
   const resetButton = document.querySelector<HTMLButtonElement>('[data-testid="filter-reset"]');
   const emptyState = document.querySelector<HTMLElement>('[data-testid="filtered-empty-state"]');
+  const paginationContainer = document.querySelector<HTMLElement>('[data-testid="pagination"]');
+  const prevButton = document.querySelector<HTMLButtonElement>('[data-testid="pagination-prev"]');
+  const nextButton = document.querySelector<HTMLButtonElement>('[data-testid="pagination-next"]');
+  const pageInfo = document.querySelector<HTMLElement>('[data-testid="pagination-info"]');
 
-  if (grid && departmentFilter && locationFilter && resetButton && emptyState) {
+  if (
+    grid &&
+    departmentFilter &&
+    locationFilter &&
+    resetButton &&
+    emptyState &&
+    paginationContainer &&
+    prevButton &&
+    nextButton &&
+    pageInfo
+  ) {
     const jobs = JSON.parse(grid.dataset.jobs ?? '[]') as Job[];
+    const pageSize = Number(grid.dataset.pageSize ?? DEFAULT_PAGE_SIZE);
     const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-job-id]'));
+    let currentPage = 1;
 
     /** Recompute visible role cards and announce when no roles match the filters. */
     const updateVisibleRoles = (): void => {
-      const matchingJobIds = new Set(
-        filterJobs(jobs, departmentFilter.value, locationFilter.value).map(
-          (job) => job.slug,
-        ),
-      );
+      const filteredJobs = filterJobs(jobs, departmentFilter.value, locationFilter.value);
+      const paginated = paginateJobs(filteredJobs, currentPage, pageSize);
+      currentPage = paginated.currentPage;
+
+      const visibleJobIds = new Set(paginated.items.map((job) => job.slug));
 
       for (const card of cards) {
-        card.hidden = !matchingJobIds.has(card.dataset.jobId ?? '');
+        card.hidden = !visibleJobIds.has(card.dataset.jobId ?? '');
       }
 
-      emptyState.hidden = matchingJobIds.size > 0;
+      emptyState.hidden = filteredJobs.length > 0;
+      paginationContainer.hidden = filteredJobs.length <= pageSize;
+      prevButton.disabled = !paginated.hasPrevPage;
+      nextButton.disabled = !paginated.hasNextPage;
+      pageInfo.textContent = `Page ${paginated.currentPage} of ${paginated.totalPages}`;
     };
 
-    departmentFilter.addEventListener('change', updateVisibleRoles);
-    locationFilter.addEventListener('change', updateVisibleRoles);
+    departmentFilter.addEventListener('change', () => {
+      currentPage = 1;
+      updateVisibleRoles();
+    });
+
+    locationFilter.addEventListener('change', () => {
+      currentPage = 1;
+      updateVisibleRoles();
+    });
+
+    prevButton.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updateVisibleRoles();
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      currentPage++;
+      updateVisibleRoles();
+    });
+
     resetButton.addEventListener('click', () => {
       departmentFilter.value = '';
       locationFilter.value = '';
+      currentPage = 1;
       updateVisibleRoles();
     });
+
+    updateVisibleRoles();
   }
 </script>
