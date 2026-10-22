@@ -4,7 +4,7 @@ import type { GetStaticPaths } from 'astro';
 import Layout from '../../layouts/Layout.astro';
 import Tag from '../../components/Tag.astro';
 import ApplyForm from '../../components/ApplyForm.astro';
-import { formatPostedDate } from '../../lib/jobs';
+import { formatPostedDate, departmentToSlug } from '../../lib/jobs';
 
 export const prerender = true;
 
@@ -30,7 +30,13 @@ const { Content } = await render(entry);
     </h1>
 
     <div class="flex flex-wrap gap-2 mb-4">
-      <Tag color="blue">{job.department}</Tag>
+      <a
+        href={`/departments/${departmentToSlug(job.department)}`}
+        class="hover:opacity-85 transition-opacity"
+        data-testid="role-department-link"
+      >
+        <Tag color="blue">{job.department}</Tag>
+      </a>
       <Tag color="slate">{job.type}</Tag>
       {job.remote && <Tag color="slate">Remote</Tag>}
     </div>

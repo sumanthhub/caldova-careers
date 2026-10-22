@@ -7,9 +7,28 @@
  */
 import type { Job } from '../types/job';
 
+/** Return a sorted, deduplicated list of departments from the given jobs array. */
+export function getDepartments(jobs: Job[]): string[] {
+  return [...new Set(jobs.map((job) => job.department))].sort();
+}
+
 /** Return jobs in the selected department, or all jobs when no department is selected. */
 export function filterJobsByDepartment(jobs: Job[], department: string): Job[] {
   return jobs.filter((job) => !department || job.department === department);
+}
+
+/** Return roles for a department from a Job[] array. */
+export function getJobsByDepartment(jobs: Job[], department: string): Job[] {
+  return filterJobsByDepartment(jobs, department);
+}
+
+/** Convert a department name to a URL slug. */
+export function departmentToSlug(department: string): string {
+  return department
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
 /** Return jobs in the selected location, or all jobs when no location is selected. */

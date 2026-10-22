@@ -3,6 +3,9 @@ import {
     filterJobs,
     filterJobsByDepartment,
     filterJobsByLocation,
+    getDepartments,
+    getJobsByDepartment,
+    departmentToSlug,
     sortByNewest,
     formatPostedDate,
 } from './jobs';
@@ -27,6 +30,21 @@ function makeJob(
   };
 }
 
+describe('getDepartments', () => {
+  it('returns sorted deduplicated list of departments', () => {
+    const jobs = [
+      makeJob('a', '2027-01-01', 'Technology'),
+      makeJob('b', '2027-01-02', 'Finance'),
+      makeJob('c', '2027-01-03', 'Technology'),
+    ];
+    expect(getDepartments(jobs)).toEqual(['Finance', 'Technology']);
+  });
+
+  it('handles empty jobs array', () => {
+    expect(getDepartments([])).toEqual([]);
+  });
+});
+
 describe('filterJobsByDepartment', () => {
   const jobs = [
     makeJob('frontend', '2027-01-01'),
@@ -44,6 +62,29 @@ describe('filterJobsByDepartment', () => {
       'frontend',
       'finance',
     ]);
+  });
+});
+
+describe('getJobsByDepartment', () => {
+  const jobs = [
+    makeJob('frontend', '2027-01-01', 'Technology'),
+    makeJob('finance', '2027-01-02', 'Finance'),
+  ];
+
+  it('returns jobs matching the department', () => {
+    expect(getJobsByDepartment(jobs, 'Technology').map((j) => j.slug)).toEqual(['frontend']);
+  });
+
+  it('returns empty array when department has no jobs', () => {
+    expect(getJobsByDepartment(jobs, 'Nonexistent')).toEqual([]);
+  });
+});
+
+describe('departmentToSlug', () => {
+  it('converts department names with ampersands and special characters to URL-friendly slugs', () => {
+    expect(departmentToSlug('Research & Development')).toBe('research-and-development');
+    expect(departmentToSlug('Contact Center & Sales Enablement')).toBe('contact-center-and-sales-enablement');
+    expect(departmentToSlug('Technology')).toBe('technology');
   });
 });
 
