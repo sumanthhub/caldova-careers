@@ -18,3 +18,196 @@
     --color-blue-900: #16234b;
     --color-blue-950: #0e1a38;
 }
+
+/*
+ * High-contrast mode styles.
+ * Meets WCAG 2.1 AA and AAA contrast ratios for all text, boundaries, and interactive elements.
+ * Uses #000000 true black canvas, #ffffff pure white text, #93c5fd accessible links,
+ * distinct 2px borders, and high-visibility focus indicators.
+ */
+html.high-contrast,
+html[data-high-contrast="true"] {
+    color-scheme: dark;
+}
+
+html.high-contrast,
+html.high-contrast *,
+html[data-high-contrast="true"],
+html[data-high-contrast="true"] * {
+    transition: none !important;
+}
+
+html.high-contrast body,
+html[data-high-contrast="true"] body {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+html.high-contrast header,
+html[data-high-contrast="true"] header {
+    background-color: #000000 !important;
+    border-bottom: 2px solid #ffffff !important;
+}
+
+html.high-contrast header a,
+html[data-high-contrast="true"] header a {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+}
+
+html.high-contrast #high-contrast-toggle,
+html[data-high-contrast="true"] #high-contrast-toggle {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+html.high-contrast #high-contrast-toggle[aria-pressed="true"],
+html[data-high-contrast="true"] #high-contrast-toggle[aria-pressed="true"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+}
+
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html[data-high-contrast="true"] h1,
+html[data-high-contrast="true"] h2,
+html[data-high-contrast="true"] h3,
+html[data-high-contrast="true"] h4 {
+    color: #ffffff !important;
+}
+
+html.high-contrast p,
+html[data-high-contrast="true"] p,
+html.high-contrast label,
+html[data-high-contrast="true"] label,
+html.high-contrast .text-slate-100,
+html.high-contrast .text-slate-200,
+html.high-contrast .text-slate-300,
+html.high-contrast .text-slate-400,
+html[data-high-contrast="true"] .text-slate-100,
+html[data-high-contrast="true"] .text-slate-200,
+html[data-high-contrast="true"] .text-slate-300,
+html[data-high-contrast="true"] .text-slate-400 {
+    color: #ffffff !important;
+}
+
+html.high-contrast a,
+html[data-high-contrast="true"] a {
+    color: #93c5fd !important;
+    text-decoration: underline !important;
+}
+
+html.high-contrast a:hover,
+html[data-high-contrast="true"] a:hover {
+    color: #ffffff !important;
+}
+
+/* Cards & containers */
+html.high-contrast [data-testid="role-card"],
+html[data-high-contrast="true"] [data-testid="role-card"],
+html.high-contrast [data-testid="empty-state"],
+html[data-high-contrast="true"] [data-testid="empty-state"],
+html.high-contrast [data-testid="apply-form"],
+html[data-high-contrast="true"] [data-testid="apply-form"] {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+}
+
+html.high-contrast [data-testid="role-card"]:hover,
+html[data-high-contrast="true"] [data-testid="role-card"]:hover {
+    border-color: #93c5fd !important;
+    outline: 2px solid #93c5fd !important;
+}
+
+/* Tags */
+html.high-contrast .tag-badge,
+html[data-high-contrast="true"] .tag-badge {
+    border: 1px solid #ffffff !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Form controls & select elements */
+html.high-contrast input,
+html.high-contrast select,
+html.high-contrast textarea,
+html[data-high-contrast="true"] input,
+html[data-high-contrast="true"] select,
+html[data-high-contrast="true"] textarea {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+html.high-contrast input::placeholder,
+html.high-contrast textarea::placeholder,
+html[data-high-contrast="true"] input::placeholder,
+html[data-high-contrast="true"] textarea::placeholder {
+    color: #cbd5e1 !important;
+}
+
+/* Interactive buttons */
+html.high-contrast [data-testid="filter-reset"],
+html[data-high-contrast="true"] [data-testid="filter-reset"] {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+html.high-contrast [data-testid="filter-reset"]:hover,
+html[data-high-contrast="true"] [data-testid="filter-reset"]:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+html.high-contrast [data-testid="apply-submit"],
+html[data-high-contrast="true"] [data-testid="apply-submit"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    font-weight: 700 !important;
+}
+
+html.high-contrast [data-testid="apply-submit"]:hover,
+html[data-high-contrast="true"] [data-testid="apply-submit"]:hover {
+    background-color: #facc15 !important;
+    color: #000000 !important;
+    border-color: #facc15 !important;
+}
+
+/* Prose content on detail pages */
+html.high-contrast .prose,
+html.high-contrast .prose *,
+html[data-high-contrast="true"] .prose,
+html[data-high-contrast="true"] .prose * {
+    color: #ffffff !important;
+}
+
+html.high-contrast .prose strong,
+html[data-high-contrast="true"] .prose strong {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* Footer */
+html.high-contrast footer,
+html[data-high-contrast="true"] footer {
+    border-top: 2px solid #ffffff !important;
+}
+
+html.high-contrast footer p,
+html[data-high-contrast="true"] footer p {
+    color: #ffffff !important;
+}
+
+/* High visibility focus outlines */
+html.high-contrast *:focus-visible,
+html[data-high-contrast="true"] *:focus-visible {
+    outline: 3px solid #facc15 !important;
+    outline-offset: 2px !important;
+}
+

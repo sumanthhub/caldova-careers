@@ -23,6 +23,26 @@ const { title = "Caldova Careers" } = Astro.props;
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script is:inline>
+      (function () {
+        try {
+          const stored = localStorage.getItem('high-contrast');
+          const prefersMore =
+            window.matchMedia &&
+            window.matchMedia('(prefers-contrast: more)').matches;
+          if (
+            stored === 'true' ||
+            stored === 'enabled' ||
+            (stored === null && prefersMore)
+          ) {
+            document.documentElement.classList.add('high-contrast');
+            document.documentElement.setAttribute('data-high-contrast', 'true');
+          }
+        } catch {
+          // Ignore storage access errors in private/restricted browsing mode
+        }
+      })();
+    </script>
   </head>
   <body
     class="min-h-screen bg-slate-900 text-white transition-colors duration-300 m-0 w-full h-full font-sans"

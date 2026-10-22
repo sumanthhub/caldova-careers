@@ -6,17 +6,93 @@
   class="bg-blue-900 text-white p-4 shadow-md transition-colors duration-300"
 >
   <div
-    class="container mx-auto flex justify-between items-center max-w-7xl px-4"
+    class="container mx-auto flex flex-wrap justify-between items-center max-w-7xl px-4 gap-4"
   >
     <a href="/" class="flex items-center gap-2 hover:opacity-90">
       <img src="/favicon.svg" alt="" class="h-8 w-8" aria-hidden="true" />
       <span class="text-xl font-bold">Caldova Careers</span>
     </a>
-    <nav aria-label="Main">
-      <ul class="flex items-center gap-6 text-sm font-medium">
-        <li><a href="/" class="hover:underline">Open roles</a></li>
-        <li><a href="/about" class="hover:underline">About Caldova</a></li>
-      </ul>
-    </nav>
+    <div class="flex items-center gap-6">
+      <nav aria-label="Main">
+        <ul class="flex items-center gap-6 text-sm font-medium">
+          <li><a href="/" class="hover:underline">Open roles</a></li>
+          <li><a href="/about" class="hover:underline">About Caldova</a></li>
+        </ul>
+      </nav>
+      <button
+        id="high-contrast-toggle"
+        type="button"
+        data-testid="high-contrast-toggle"
+        aria-pressed="false"
+        aria-label="Toggle high contrast mode"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-white/40 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" />
+        </svg>
+        <span data-testid="contrast-toggle">High contrast: <span data-testid="contrast-status">Off</span></span>
+      </button>
+    </div>
   </div>
 </header>
+
+<script>
+  /**
+   * Initializes the high-contrast mode toggle control and syncs its state
+   * with localStorage and documentElement attributes.
+   */
+  function setupContrastToggle(): void {
+    const button = document.getElementById('high-contrast-toggle');
+    if (!button) return;
+
+    const isHighContrast = (): boolean =>
+      document.documentElement.classList.contains('high-contrast') ||
+      document.documentElement.getAttribute('data-high-contrast') === 'true';
+
+    const syncUI = (active: boolean): void => {
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      const statusSpan = button.querySelector<HTMLElement>('[data-testid="contrast-status"]');
+      if (statusSpan) {
+        statusSpan.textContent = active ? 'On' : 'Off';
+      }
+    };
+
+    // Synchronize initial UI state with documentElement class/attribute
+    syncUI(isHighContrast());
+
+    if (button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+
+    button.addEventListener('click', () => {
+      const nextActive = !isHighContrast();
+      if (nextActive) {
+        document.documentElement.classList.add('high-contrast');
+        document.documentElement.setAttribute('data-high-contrast', 'true');
+      } else {
+        document.documentElement.classList.remove('high-contrast');
+        document.documentElement.removeAttribute('data-high-contrast');
+      }
+      try {
+        localStorage.setItem('high-contrast', nextActive ? 'true' : 'false');
+      } catch {
+        // localStorage not available
+      }
+      syncUI(nextActive);
+    });
+  }
+
+  setupContrastToggle();
+  document.addEventListener('astro:page-load', setupContrastToggle);
+  document.addEventListener('DOMContentLoaded', setupContrastToggle);
+</script>
