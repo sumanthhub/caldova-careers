@@ -71,9 +71,33 @@ test.describe('Open roles listing', () => {
     await page.getByTestId('filter-reset').click();
     await expect(departmentFilter).toHaveValue('');
     await expect(locationFilter).toHaveValue('');
+    await expect(page.getByTestId('role-sort')).toHaveValue('newest');
     await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(
       expectedRoleCount,
     );
+  });
+
+  test('sorts roles by title A–Z and Z–A', async ({ page }) => {
+    await page.goto('/');
+    const sortControl = page.getByTestId('role-sort');
+    await expect(sortControl).toBeVisible();
+
+    await sortControl.selectOption({ value: 'title-asc' });
+    await expect(page.getByTestId('role-title').first()).toHaveText('Clinical Research Scientist');
+
+    await sortControl.selectOption({ value: 'title-desc' });
+    await expect(page.getByTestId('role-title').first()).toHaveText('Senior Frontend Engineer');
+  });
+
+  test('sorts roles by posted date oldest and newest', async ({ page }) => {
+    await page.goto('/');
+    const sortControl = page.getByTestId('role-sort');
+
+    await sortControl.selectOption({ value: 'oldest' });
+    await expect(page.getByTestId('role-title').first()).toHaveText('Senior Frontend Engineer');
+
+    await sortControl.selectOption({ value: 'newest' });
+    await expect(page.getByTestId('role-title').first()).toHaveText('Financial Analyst');
   });
 
   test('shows an empty state when no roles match both filters', async ({ page }) => {

@@ -32,7 +32,7 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
       <EmptyState text="There are no open roles right now. Check back soon." />
     ) : (
       <>
-        <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4" data-testid="role-filters">
+        <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="role-filters">
           <div>
             <label for="department-filter" class="block mb-2 text-sm font-medium text-slate-200">
               Department
@@ -57,6 +57,21 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
             >
               <option value="">All locations</option>
               {locations.map((location) => <option value={location}>{location}</option>)}
+            </select>
+          </div>
+          <div>
+            <label for="role-sort" class="block mb-2 text-sm font-medium text-slate-200">
+              Sort by
+            </label>
+            <select
+              id="role-sort"
+              class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              data-testid="role-sort"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="title-asc">Title A–Z</option>
+              <option value="title-desc">Title Z–A</option>
             </select>
           </div>
           <div class="flex items-end">
@@ -86,7 +101,7 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
 </Layout>
 
 <script>
-  import { filterJobs } from '../lib/jobs';
+  import { filterJobs, sortJobs } from '../lib/jobs';
   import type { Job } from '../types/job';
 
   const grid = document.querySelector<HTMLElement>('[data-testid="roles-grid"]');
@@ -96,12 +111,30 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
   const locationFilter = document.querySelector<HTMLSelectElement>(
     '[data-testid="location-filter"]',
   );
+  const sortControl = document.querySelector<HTMLSelectElement>('[data-testid="role-sort"]');
   const resetButton = document.querySelector<HTMLButtonElement>('[data-testid="filter-reset"]');
   const emptyState = document.querySelector<HTMLElement>('[data-testid="filtered-empty-state"]');
 
-  if (grid && departmentFilter && locationFilter && resetButton && emptyState) {
+  if (grid && departmentFilter && locationFilter && sortControl && resetButton && emptyState) {
     const jobs = JSON.parse(grid.dataset.jobs ?? '[]') as Job[];
     const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-job-id]'));
+    const cardsBySlug = new Map<string, HTMLElement>();
+    for (const card of cards) {
+      if (card.dataset.jobId) {
+        cardsBySlug.set(card.dataset.jobId, card);
+      }
+    }
+
+    /** Reorder role card DOM elements according to the selected sort option. */
+    const updateSortOrder = (): void => {
+      const sortedJobs = sortJobs(jobs, sortControl.value);
+      for (const job of sortedJobs) {
+        const card = cardsBySlug.get(job.slug);
+        if (card) {
+          grid.appendChild(card);
+        }
+      }
+    };
 
     /** Recompute visible role cards and announce when no roles match the filters. */
     const updateVisibleRoles = (): void => {
@@ -118,11 +151,17 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
       emptyState.hidden = matchingJobIds.size > 0;
     };
 
+    sortControl.addEventListener('change', () => {
+      updateSortOrder();
+    });
+
     departmentFilter.addEventListener('change', updateVisibleRoles);
     locationFilter.addEventListener('change', updateVisibleRoles);
     resetButton.addEventListener('click', () => {
       departmentFilter.value = '';
       locationFilter.value = '';
+      sortControl.value = 'newest';
+      updateSortOrder();
       updateVisibleRoles();
     });
   }

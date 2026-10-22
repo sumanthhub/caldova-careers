@@ -3,6 +3,7 @@ import {
     filterJobs,
     filterJobsByDepartment,
     filterJobsByLocation,
+    sortJobs,
     sortByNewest,
     formatPostedDate,
 } from './jobs';
@@ -90,6 +91,41 @@ describe('filterJobs', () => {
 
   it('returns no jobs when no postings match', () => {
     expect(filterJobs(jobs, 'Finance', 'London, United Kingdom')).toEqual([]);
+  });
+});
+
+describe('sortJobs', () => {
+  const jobs = [
+    { ...makeJob('b-mid', '2027-02-15'), title: 'B Role' },
+    { ...makeJob('a-new', '2027-03-01'), title: 'A Role' },
+    { ...makeJob('c-old', '2027-01-01'), title: 'C Role' },
+  ];
+
+  it('sorts by newest posted date first', () => {
+    expect(sortJobs(jobs, 'newest').map((j) => j.slug)).toEqual(['a-new', 'b-mid', 'c-old']);
+  });
+
+  it('sorts by oldest posted date first', () => {
+    expect(sortJobs(jobs, 'oldest').map((j) => j.slug)).toEqual(['c-old', 'b-mid', 'a-new']);
+  });
+
+  it('sorts by title A to Z', () => {
+    expect(sortJobs(jobs, 'title-asc').map((j) => j.slug)).toEqual(['a-new', 'b-mid', 'c-old']);
+  });
+
+  it('sorts by title Z to A', () => {
+    expect(sortJobs(jobs, 'title-desc').map((j) => j.slug)).toEqual(['c-old', 'b-mid', 'a-new']);
+  });
+
+  it('defaults to newest when sort option is unspecified or unknown', () => {
+    expect(sortJobs(jobs).map((j) => j.slug)).toEqual(['a-new', 'b-mid', 'c-old']);
+    expect(sortJobs(jobs, 'invalid-sort').map((j) => j.slug)).toEqual(['a-new', 'b-mid', 'c-old']);
+  });
+
+  it('does not mutate the input array', () => {
+    const original = jobs.map((j) => j.slug);
+    sortJobs(jobs, 'title-desc');
+    expect(jobs.map((j) => j.slug)).toEqual(original);
   });
 });
 

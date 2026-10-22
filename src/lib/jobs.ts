@@ -22,11 +22,31 @@ export function filterJobs(jobs: Job[], department: string, location: string): J
   return filterJobsByLocation(filterJobsByDepartment(jobs, department), location);
 }
 
+export type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
+
+/** Return jobs sorted according to the selected sort option (does not mutate input). */
+export function sortJobs(jobs: Job[], sortOption: SortOption | string = 'newest'): Job[] {
+  const sorted = [...jobs];
+  switch (sortOption) {
+    case 'oldest':
+      return sorted.sort(
+        (a, b) => new Date(a.postedDate).getTime() - new Date(b.postedDate).getTime(),
+      );
+    case 'title-asc':
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    case 'title-desc':
+      return sorted.sort((a, b) => b.title.localeCompare(a.title));
+    case 'newest':
+    default:
+      return sorted.sort(
+        (a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime(),
+      );
+  }
+}
+
 /** Return jobs sorted by posted date, newest first (does not mutate input). */
 export function sortByNewest(jobs: Job[]): Job[] {
-  return [...jobs].sort(
-    (a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime(),
-  );
+  return sortJobs(jobs, 'newest');
 }
 
 /**
