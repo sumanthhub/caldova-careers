@@ -18,6 +18,18 @@ test.describe('Open roles listing', () => {
     await expect(page.getByTestId('role-card')).toHaveCount(expectedRoleCount);
   });
 
+  test('displays careers summary with total open roles and department count', async ({ page }) => {
+    await page.goto('/');
+    const summary = page.getByTestId('careers-summary');
+    await expect(summary).toBeVisible();
+
+    const totalRoles = page.getByTestId('summary-total-roles');
+    await expect(totalRoles).toHaveText(String(expectedRoleCount));
+
+    const totalDepartments = page.getByTestId('summary-total-departments');
+    await expect(totalDepartments).toHaveText('10');
+  });
+
   test('filters roles by department', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('department-filter').selectOption({ label: 'Technology' });

@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import RoleCard from '../components/RoleCard.astro';
 import EmptyState from '../components/EmptyState.astro';
-import { sortByNewest } from '../lib/jobs';
+import { sortByNewest, getCareersSummary } from '../lib/jobs';
 import type { Job } from '../types/job';
 
 export const prerender = true;
@@ -12,6 +12,7 @@ const entries = await getCollection('jobs');
 const jobs: Job[] = sortByNewest(
   entries.map((entry) => ({ slug: entry.id, ...entry.data })),
 );
+const summary = getCareersSummary(jobs);
 const departments = [...new Set(jobs.map((job) => job.department))].sort();
 const locations = [...new Set(jobs.map((job) => job.location))].sort();
 ---
@@ -20,10 +21,21 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort();
   <div class="py-8">
     <section class="mb-10">
       <h1 class="text-4xl font-bold text-slate-100 mb-3">Build the future of medicine</h1>
-      <p class="text-lg text-slate-400 max-w-2xl">
+      <p class="text-lg text-slate-400 max-w-2xl mb-6">
         Caldova is an AI-native pharmaceutical company. Explore our open roles
         and help us bring better treatments to patients faster.
       </p>
+
+      <div class="flex flex-wrap gap-4" data-testid="careers-summary">
+        <div class="rounded-lg bg-slate-800/80 border border-slate-700/60 px-5 py-3">
+          <p class="text-2xl font-bold text-blue-400" data-testid="summary-total-roles">{summary.totalRoles}</p>
+          <p class="text-xs uppercase tracking-wider text-slate-400">Open Roles</p>
+        </div>
+        <div class="rounded-lg bg-slate-800/80 border border-slate-700/60 px-5 py-3">
+          <p class="text-2xl font-bold text-blue-400" data-testid="summary-total-departments">{summary.totalDepartments}</p>
+          <p class="text-xs uppercase tracking-wider text-slate-400">Departments</p>
+        </div>
+      </div>
     </section>
 
     <h2 class="text-2xl font-medium mb-6 text-slate-100">Open roles</h2>

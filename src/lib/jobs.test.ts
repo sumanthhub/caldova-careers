@@ -3,6 +3,7 @@ import {
     filterJobs,
     filterJobsByDepartment,
     filterJobsByLocation,
+    getCareersSummary,
     sortByNewest,
     formatPostedDate,
 } from './jobs';
@@ -118,5 +119,26 @@ describe('formatPostedDate', () => {
 
   it('returns the raw value when the date is unparseable', () => {
     expect(formatPostedDate('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('getCareersSummary', () => {
+  it('computes total roles and unique departments count', () => {
+    const jobs = [
+      makeJob('a', '2027-01-01', 'Technology'),
+      makeJob('b', '2027-01-02', 'Finance'),
+      makeJob('c', '2027-01-03', 'Technology'),
+    ];
+    expect(getCareersSummary(jobs)).toEqual({
+      totalRoles: 3,
+      totalDepartments: 2,
+    });
+  });
+
+  it('handles empty jobs array gracefully', () => {
+    expect(getCareersSummary([])).toEqual({
+      totalRoles: 0,
+      totalDepartments: 0,
+    });
   });
 });

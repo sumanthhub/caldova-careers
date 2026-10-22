@@ -45,3 +45,17 @@ export function formatPostedDate(iso: string): string {
     timeZone: 'UTC',
   });
 }
+
+export interface CareersSummary {
+  totalRoles: number;
+  totalDepartments: number;
+}
+
+/** Return high-level summary metrics about open roles and active departments. */
+export function getCareersSummary(jobs: Job[]): CareersSummary {
+  const departments = new Set(jobs.map((job) => job.department));
+  return {
+    totalRoles: jobs.length,
+    totalDepartments: departments.size,
+  };
+}
